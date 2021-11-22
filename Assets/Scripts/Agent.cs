@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class Agent : MonoBehaviour {
     private static float sight = 100f;
-    private static float space = 150f;
+    private static float space = 50f;
     private static float movementSpeed = 75f;
     private static float rotateSpeed = 3f;
     private static float distToBoundary = 100f;
@@ -16,6 +16,7 @@ public class Agent : MonoBehaviour {
     public bool isZombie;
     public Vector2 position;
     public SpriteRenderer sprRenderer;
+    public float seperationScale = .1f;
 
     private Sprite zombieSprite;
 
@@ -70,7 +71,7 @@ public class Agent : MonoBehaviour {
                 if (distance < space)
                 {
                     // Separation
-                    dir += (position - a.position);   
+                    dir += (position - a.position) * seperationScale;   
                 }
                 else if (distance < sight)
                 {
