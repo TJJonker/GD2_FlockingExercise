@@ -16,7 +16,8 @@ public class Agent : MonoBehaviour {
     public bool isZombie;
     public Vector2 position;
     public SpriteRenderer sprRenderer;
-    public float seperationScale = .1f;
+    public float seperationScale = .05f;
+    public float cohesionWeight = .3f;
 
     private Sprite zombieSprite;
 
@@ -76,8 +77,7 @@ public class Agent : MonoBehaviour {
                 else if (distance < sight)
                 {
                     // Cohesion
-                    //dX += TODO
-                    //dY += TODO
+                    dir += a.dir * cohesionWeight;
                 }
                 if (distance < sight)
                 {
