@@ -63,8 +63,9 @@ public class Agent : MonoBehaviour {
     {
         foreach (Agent a in agents)
         {
+            if (a == this) continue;
             float distance = Distance(position, a.position);
-            if (a != this && !a.isZombie)
+            if (!a.isZombie)
             {
                 if (distance < space)
                 {
@@ -87,8 +88,7 @@ public class Agent : MonoBehaviour {
             if (a.isZombie && distance < sight)
             {
                 // Evade
-                //dX += TODO
-                //dY += TODO
+                dir += position - a.position;    
             }
         }
     }
