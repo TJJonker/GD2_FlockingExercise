@@ -12,12 +12,15 @@ public class Agent : MonoBehaviour {
     private BoxCollider2D boundary;
 
     private Vector2 dir;
+    private Vector2 groupPosition;
+    private float groupAmount;
 
     public bool isZombie;
     public Vector2 position;
     public SpriteRenderer sprRenderer;
     public float seperationScale = .05f;
-    public float cohesionWeight = .3f;
+    public float cohesionWeight = .01f;
+    public float AlignmentWeight = .4f;
 
     private Sprite zombieSprite;
 
@@ -25,6 +28,7 @@ public class Agent : MonoBehaviour {
     {
         position = new Vector2(Random.Range(boundary.bounds.min.x + distToBoundary, boundary.bounds.max.x - distToBoundary), Random.Range(boundary.bounds.min.y + distToBoundary, boundary.bounds.max.y - distToBoundary));
         transform.position = position;
+        dir = new Vector2(Random.Range(-1, 1), Random.Range(-1, 1));
 
         this.boundary = boundary;
 
@@ -34,7 +38,6 @@ public class Agent : MonoBehaviour {
 
         this.zombieSprite = zombieSprite;
 
-        dir = new Vector2();
 
         if (isZombie)
             sprRenderer.sprite = zombieSprite;
@@ -44,6 +47,13 @@ public class Agent : MonoBehaviour {
 
     public void Move(List<Agent> agents)
     {
+        Vector2 direction = (Vector3)position - transform.position;
+        float angle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg;
+        Quaternion rotation = Quaternion.AngleAxis(angle, Vector3.forward);
+        transform.rotation = Quaternion.Slerp(transform.rotation, rotation, rotateSpeed * Time.deltaTime);
+
+        transform.position = position;
+
         //Agents flock, zombie's hunt 
         if (!isZombie) Flock(agents);
         else Hunt(agents);
@@ -52,17 +62,12 @@ public class Agent : MonoBehaviour {
 
         position.x += dir.x;
         position.y += dir.y;
-
-        Vector2 direction = (Vector3)position - transform.position;
-        float angle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg;
-        Quaternion rotation = Quaternion.AngleAxis(angle, Vector3.forward);
-        transform.rotation = Quaternion.Slerp(transform.rotation, rotation, rotateSpeed * Time.deltaTime);
-
-        transform.position = position;
     }
 
     private void Flock(List<Agent> agents)
     {
+        groupAmount = 0;
+        groupPosition = Vector2.zero;
         foreach (Agent a in agents)
         {
             if (a == this) continue;
@@ -77,13 +82,13 @@ public class Agent : MonoBehaviour {
                 else if (distance < sight)
                 {
                     // Cohesion
-                    dir += a.dir * cohesionWeight;
+                    groupAmount++;
+                    groupPosition += a.position;
                 }
                 if (distance < sight)
                 {
                     // Alignment
-                    //dX += TODO
-                    //dY += TODO
+                    dir += a.dir * AlignmentWeight;
                 }
             }
             if (a.isZombie && distance < sight)
@@ -91,6 +96,12 @@ public class Agent : MonoBehaviour {
                 // Evade
                 dir += position - a.position;    
             }
+        }
+        if (groupAmount > 0)
+        {
+            groupPosition /= groupAmount;
+            var direction = groupPosition - position;
+            dir += direction * cohesionWeight;
         }
     }
 
